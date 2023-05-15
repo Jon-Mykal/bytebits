@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, Image } from 'react-native'
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -28,13 +28,21 @@ const EmojiSticker = ({ imageSize, stickerSource }) => {
     });
 
     const scaleImage = useSharedValue(imageSize);
+    const scaleImageV2 = imageSize;
     const onDoubleTap = useAnimatedGestureHandler({
         onActive: () => {
+            console.log(imageSize, scaleImage.value);
             if (scaleImage.value) {
-                scaleImage.value = imageSize * 2;
+                
+                scaleImage.value = scaleImage.value >= 320 ?  scaleImage.value : scaleImage.value * 2;
             }
+            console.log(imageStyle)
+            // if (scaleImageV2) {
+            //     scaleImageV2 = imageSize * 2;
+            // }
         }
     });
+
     const imageStyle = useAnimatedStyle(() => {
         return {
             width: withSpring(scaleImage.value),
@@ -44,19 +52,28 @@ const EmojiSticker = ({ imageSize, stickerSource }) => {
 
     const onDrag = useAnimatedGestureHandler({
         onStart: (event, context) => {
+            // Set initial values for translateX and translateY
+            // Get the current or last position of the translation
+            // when the drag isn't active
             context.translateX = translateX.value;
             context.translateY = translateY.value;
+            console.log('Start/Stop');
+        
         },
         onActive: (event, context) => {
+            // Since the values for both are 0 on start
+            // when the dragging starts, we need to get the
+            // values from event and add to the context values (current position)
             translateX.value = context.translateX + event.translationX;
             translateY.value = context.translateY + event.translationY;
+            console.log('Drag');
         }
     }
     );
     return (
         <PanGestureHandler onGestureEvent={onDrag}>
             <AnimatedView style={[containerStyle,{ top: -350 }]}>
-                <TapGestureHandler onGestureEvent={onDoubleTap} numberOfTaps={2}>
+                <TapGestureHandler onGestureEvent={onDoubleTap}  numberOfTaps={2}>
                     <AnimatedImage
                         source={stickerSource}
                         resizeMode="contain"
